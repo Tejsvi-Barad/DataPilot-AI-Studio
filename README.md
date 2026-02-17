@@ -1,134 +1,130 @@
-# MatrixLab-AI-Studio
+# 🧠 DataPilot AI Studio
 
-# 🧠 MatrixLab AI Studio v2.0
-# AI-Powered Data Analysis | Smart Cleaning | Visualizations | SQL Engine | Insights
-# 🚀 Overview
+DataPilot AI Studio is a simple AI-powered data analysis web application built using Streamlit.
+It helps users upload datasets, clean data, visualize charts, build machine learning models, and generate PDF reports — all without coding.
 
-MatrixLab AI Studio v2.0 is an advanced, interactive AI + Data Science platform built using Streamlit, designed for:
+# 🎯 Project Goal
 
-Students
-Data Science Beginners
-ML Engineers
-Analysts
-Researchers
+The main goal of this project is:
+Upload CSV or Excel file
+Clean data easily
+Create visualizations
+Train ML model
+Generate PDF report
+This project is useful for students, beginners, and data science learners.
 
-# It helps users quickly perform data cleaning, preprocessing, EDA, visualizations, SQL queries, and AI-generated insights — all without writing a single line of code.
 
-# 🎯 Key Features
-📤 1. Upload Any Dataset
-Supports CSV & Excel (XLSX)
-Instant preview of your data
-File validation & upload success indicator
+# It helps users quickly perform data cleaning, preprocessing, EDA, visualizations and AI-generated insights — all without writing a single line of code.
 
-# ⚡ 2. One-Click Smart Cleaning
-Perform essential cleaning tasks instantly:
+# 📂 Features
+# 📤 1. Upload Dataset
+
+Supports CSV and Excel files
+Shows data preview
+Displays dataset shape
+
+# 🧹 2. Smart Cleaning
+
 Remove duplicates
-Auto-fill missing values
-Convert datatypes
-Normalize or standardize numbers
-Handle outliers (cap/remove)
-Fix column names
-Drop useless columns
-Perfect for beginners and quick experiments.
+Fill missing values
+Clean column names
+Drop selected columns
+Show before/after shape
 
-# 🧹 3. Advanced Data Processing
-More manual + customizable cleaning:
-Detailed missing value handling
-Date/time conversion
-Row/column shaping
-Deep preprocessing
-Before & after shape comparison
-Cleaned dataset export
+# 🔧 3. Advanced Data Processing
 
-# 📊 4. Visualization Dashboard
-Explore your dataset visually with:
+Manual cleaning options
+Datatype conversion
+Handle missing values
+Export cleaned dataset
+
+# 📊 4. Data Visualization
+
 Histogram
-Box plot
-Violin plot
-Density plot
 Scatter plot
+Box plot
 Bar chart
 Pie chart
-Pair plot
 Correlation heatmap
 
-# 📈 5. Advanced Visuals
-Deeper, more powerful visualization tools:
-Pairwise Correlation Explorer
-Feature Distribution Analyzer
-Category Frequency Visualizer
-Time-Series Trend Viewer
-Boxplot Outlier Explorer
+Helps to understand data visually.
 
-# 🧾 6. SQL Query Builder
-Run SQL queries directly on your dataset:
-SQL editor with auto schema detection
-Works with DuckDB or SQLite
-Example queries included
-Download query results
-Perfect for learning SQL on real datasets
+# 🤖 5. Model Prediction
 
-# 🔎 7. Explain My Dataset (AI)
-AI-powered dataset summary:
-Executive snapshot
-Missing value analysis
-Numeric & categorical insights
-Skewness, correlation, outliers
-High-cardinality detection
-Actionable recommendations
-Clear natural-language explanation
-Quick Highlights summary section
-No external API required — runs locally.
+Select target column
+Automatic model selection
+Regression (Linear Regression)
+Classification (Logistic Regression)
+Shows Accuracy or R² Score
 
-# ℹ️ 8. About Page
-Includes:
-App purpose
-Feature overview
-Dev team credits
-Team logo with 3D hover effect
-Mission & vision
+No coding required.
 
-# 🖥 Application Working Sections (Flow)
-1️⃣ Start at Welcome Page
-Lottie animation
-App introduction
-“Enter App” button
+# 📄 6. PDF Report Generation
 
+Generates project report
+Includes dataset details
+Includes model performance
+One-click download
+
+Useful for project submission.
+
+# ℹ️ 7. About Section
+
+Project description
+Developer information
+Application overview
+
+
+# 🖥 Application Flow
+
+1️⃣ Welcome Page
 2️⃣ Upload Dataset
-Browse or drag-drop CSV/XLSX
-View initial preview
+3️⃣ Clean Data
+4️⃣ Visualize Data
+5️⃣ Train Model
+6️⃣ Generate PDF
+7️⃣ About Page
 
-3️⃣ Smart Cleaning
-Choose from one-click cleaning options
 
-4️⃣ Advanced Cleaning
-More detailed, manual dataset processing
+# 🛠 Technologies Used
 
-5️⃣ Visualizations
-Create plots & charts interactively
-
-6️⃣ Advanced Visuals
-Explore deeper insights using specialized plots
-
-7️⃣ SQL Query Builder
-Run SQL commands
-Export results
-
-8️⃣ AI Dataset Explanation
-Generate smart summary
-Read actionable insights
-
-9️⃣ About / Credits
-App information & team section
-
-# 🛠 Tech Stack
 Python
 Streamlit
 Pandas
 NumPy
 Matplotlib
 Seaborn
-scikit-learn
-DuckDB / SQLite
-HTML + CSS for styling
-Lottie animations
+Scikit-learn
+ReportLab
+
+# 📦 Installation
+
+Step 1: Clone the repository
+git clone https://github.com/your-username/datapilot-ai-studio.git
+
+Step 2: Install required libraries
+pip install -r requirements.txt
+
+Step 3: Run the application
+streamlit run app.py
+
+
+# 🎓 Academic Project
+
+This project is developed as a 6th Semester academic project.
+It demonstrates:
+Data Cleaning
+Data Visualization
+Machine Learning
+Report Generation
+Full Data Pipeline
+
+# 👨‍💻 Developed By
+
+Tejsvi Barad
+BSc IT Final Year Student
+
+
+# 📌 Conclusion
+
+DataPilot AI Studio is a beginner-friendly AI data analysis tool that combines cleaning, visualization, prediction, and reporting in one simple platform.

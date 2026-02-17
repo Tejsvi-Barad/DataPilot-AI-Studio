@@ -431,232 +431,153 @@ elif selected_tab == "📊 Visualization":
                 except Exception as e:
                     st.error(f"❌ Error generating {chart_type}: {e}")
 
-# ---------------- Visualization (Advanced)  ---------------- #
-elif selected_tab == "📈 Advance Visuals":
-    st.subheader("📈 Advance Visuals")
-    if st.session_state.cleaned_data is None:
-        st.warning("Please clean/process your data first (Data Processing).")
+
+# ---------------- Model Prediction ---------------- #
+elif selected_tab == "📈 Model Prediction":
+
+    st.subheader("📈 Model Prediction")
+
+    if "cleaned_data" not in st.session_state:
+        st.warning("Please clean the dataset first.")
     else:
         df = st.session_state.cleaned_data.copy()
-        eda = EDAAnalyzer()
 
-        vis_mode = st.selectbox("Visualization Mode", [
-            "Pairwise Correlation Explorer",
-            "Feature Distribution Analyzer",
-            "Category Frequency Visualizer",
-            "Boxplot Outlier Explorer"
-        ])
+        if df.shape[0] < 5:
+            st.error("Dataset too small for prediction.")
+            st.stop()
 
-        numeric_cols = df.select_dtypes(include="number").columns.tolist()
-        categorical_cols = df.select_dtypes(exclude="number").columns.tolist()
-        datetime_cols = [c for c in df.columns if pd.api.types.is_datetime64_any_dtype(df[c])]
+        st.write("Dataset Shape:", df.shape)
+        st.dataframe(df.head())
 
-        # Pairwise Correlation Explorer
-        if vis_mode == "Pairwise Correlation Explorer":
-            st.markdown("**Pairwise Correlation Explorer**")
-            cols = st.multiselect("Select numeric columns (min 2)", options=numeric_cols, default=numeric_cols[:6])
-            method = st.selectbox("Method", ["pearson", "spearman", "kendall"])
-            threshold = st.slider("Show pairs with |corr| ≥", 0.0, 1.0, 0.6, step=0.05)
-            if len(cols) >= 2:
-                sub = df[cols].dropna(how="all")
-                corr = sub.corr(method=method)
-                fig, ax = plt.subplots(figsize=(8,6))
-                sns.heatmap(corr, annot=True, fmt=".2f", cmap="vlag", center=0, ax=ax)
-                ax.set_title(f"{method.title()} Correlation Heatmap")
-                st.pyplot(fig)
+        # Select Target Column
+        target = st.selectbox("Select Target Column", df.columns)
 
-                pairs = []
-                for i in range(len(corr.columns)):
-                    for j in range(i+1, len(corr.columns)):
-                        a,b = corr.columns[i], corr.columns[j]
-                        val = corr.iloc[i,j]
-                        if abs(val) >= threshold:
-                            pairs.append((a,b,round(val,3)))
-                if pairs:
-                    st.table(pd.DataFrame(pairs, columns=["col1","col2",f"{method}_corr"]))
-                else:
-                    st.info("No pairs above threshold.")
+        if target:
+
+            # Remove rows where target is missing
+            df = df[df[target].notna()]
+
+            # Fill numeric missing values
+            numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns
+            df[numeric_cols] = df[numeric_cols].fillna(df[numeric_cols].mean())
+
+            # Fill remaining categorical missing values
+            df = df.fillna("Unknown")
+
+            # Define X and y
+            X = df.drop(columns=[target])
+            y = df[target]
+
+            # Keep only numeric features for model
+            X = X.select_dtypes(include=['int64', 'float64'])
+
+            if X.shape[1] == 0:
+                st.error("No numeric features available for training.")
+                st.stop()
+
+            if X.shape[0] < 5:
+                st.error("Not enough valid rows to train model.")
+                st.stop()
+
+            from sklearn.model_selection import train_test_split
+            from sklearn.linear_model import LinearRegression, LogisticRegression
+            from sklearn.metrics import r2_score, accuracy_score
+            from sklearn.preprocessing import LabelEncoder
+
+            # Encode categorical target
+            if y.dtype == "object":
+                le = LabelEncoder()
+                y = le.fit_transform(y)
+
+            X_train, X_test, y_train, y_test = train_test_split(
+                X, y, test_size=0.2, random_state=42
+            )
+
+            # Decide model type
+            if len(set(y)) > 10:
+                # Regression
+                model = LinearRegression()
+                model.fit(X_train, y_train)
+
+                y_pred = model.predict(X_test)
+                score = r2_score(y_test, y_pred)
+
+                st.success("Regression Model Trained Successfully")
+                st.write("R² Score:", round(score, 3))
+
+                st.session_state.model_score = score
+                st.session_state.model_type = "Linear Regression"
+                st.session_state.target_column = target
+
             else:
-                st.info("Pick at least 2 numeric columns.")
+                # Classification
+                model = LogisticRegression(max_iter=1000)
+                model.fit(X_train, y_train)
 
-        # Feature Distribution Analyzer
-        elif vis_mode == "Feature Distribution Analyzer":
-            st.markdown("**Feature Distribution Analyzer**")
-            cols = st.multiselect("Pick numeric columns", options=numeric_cols, default=numeric_cols[:3])
-            plot_kind = st.selectbox("Plot", ["Histogram (overlay)", "KDE (overlay)", "Boxplot (side-by-side)"])
-            bins = st.slider("Bins", 5, 200, 30)
-            if cols:
-                fig, ax = plt.subplots(figsize=(8,5))
-                if plot_kind == "Histogram (overlay)":
-                    for c in cols:
-                        sns.histplot(df[c].dropna(), bins=bins, stat="density", element="step", alpha=0.35, label=c, ax=ax)
-                    ax.legend(); ax.set_title("Overlay Histograms")
-                elif plot_kind == "KDE (overlay)":
-                    for c in cols:
-                        sns.kdeplot(df[c].dropna(), label=c, fill=False, ax=ax)
-                    ax.legend(); ax.set_title("Overlay KDEs")
-                else:
-                    sns.boxplot(data=df[cols], orient="v", ax=ax); ax.set_title("Boxplots")
-                st.pyplot(fig)
-                st.write(df[cols].describe().T)
-            else:
-                st.info("Select one or more numeric columns.")
+                y_pred = model.predict(X_test)
+                score = accuracy_score(y_test, y_pred)
 
-        # Category Frequency Visualizer
-        elif vis_mode == "Category Frequency Visualizer":
-            st.markdown("**Category Frequency Visualizer**")
-            if not categorical_cols:
-                st.info("No categorical columns found.")
-            else:
-                cat = st.selectbox("Choose categorical column", options=categorical_cols)
-                top_k = st.slider("Top k", 3, 50, 10)
-                normalize = st.checkbox("Show relative frequency", value=False)
-                vc = df[cat].fillna("<<MISSING>>").value_counts(normalize=normalize).head(top_k)
-                fig, ax = plt.subplots(figsize=(8,4))
-                sns.barplot(x=vc.values, y=vc.index, orient="h", ax=ax)
-                ax.set_xlabel("Proportion" if normalize else "Count")
-                ax.set_ylabel(cat)
-                ax.set_title(f"Top {top_k} categories in {cat}")
-                st.pyplot(fig)
-                st.table(vc.to_frame("proportion" if normalize else "count"))
+                st.success("Classification Model Trained Successfully")
+                st.write("Accuracy:", round(score, 3))
 
-        # Boxplot Outlier Explorer
-        elif vis_mode == "Boxplot Outlier Explorer":
-            st.markdown("**Boxplot Outlier Explorer**")
-            if not numeric_cols:
-                st.info("No numeric columns available.")
-            else:
-                col = st.selectbox("Choose numeric column", options=numeric_cols)
-                multiplier = st.slider("IQR multiplier", 1.0, 4.0, 1.5)
-                maxrows = st.number_input("Max sample outlier rows", min_value=5, max_value=500, value=20)
-                if st.button("Show Outliers"):
-                    s = df[col].dropna()
-                    q1 = s.quantile(0.25); q3 = s.quantile(0.75); iqr = q3 - q1
-                    lower = q1 - multiplier * iqr; upper = q3 + multiplier * iqr
-                    mask = (df[col] < lower) | (df[col] > upper)
-                    n = int(mask.sum())
-                    fig, ax = plt.subplots(figsize=(6,3))
-                    sns.boxplot(x=s, ax=ax)
-                    ax.set_title(f"{col} — Outliers: {n}")
-                    st.pyplot(fig)
-                    st.write(f"Outliers flagged: {n}")
-                    if n>0:
-                        st.dataframe(df.loc[mask].head(maxrows))
+                st.session_state.model_score = score
+                st.session_state.model_type = "Logistic Regression"
+                st.session_state.target_column = target
 
-# ---------------- SQL Query Builder ---------------- #
-elif selected_tab == "🧾 SQL Query Builder":
-    st.subheader("🧾 SQL Query Builder — run SQL over your CSV")
-    if st.session_state.cleaned_data is None and st.session_state.data is None:
-        st.warning("Please upload or clean a dataset first (Data Upload / One-Click Clean).")
+# ---------------- Generate PDF Report ---------------- #
+elif selected_tab == "📄 Generate PDF":
+
+    st.subheader("📄 Generate PDF Report")
+
+    if "model_score" not in st.session_state:
+        st.warning("Please train model first before generating report.")
     else:
-        df = st.session_state.cleaned_data if st.session_state.cleaned_data is not None else st.session_state.data
-        st.info("Table available as: `data`. Use standard SQL. Example: `SELECT * FROM data WHERE age > 30 ORDER BY salary DESC LIMIT 100`")
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+        from reportlab.lib.styles import ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import Paragraph
+        from reportlab.platypus import Spacer
+        from reportlab.platypus import Table
 
-        # Try to use duckdb (best), fallback to sqlite
-        try:
-            import duckdb  # type: ignore
-            use_duckdb = True
-        except Exception:
-            use_duckdb = False
+        file_path = "Model_Report.pdf"
+        doc = SimpleDocTemplate(file_path, pagesize=A4)
 
-        # default query stored in session so example buttons can update it
-        if "sql_query" not in st.session_state:
-            st.session_state.sql_query = "SELECT * FROM data LIMIT 200"
+        elements = []
+        styles = getSampleStyleSheet()
 
-        # --- Examples column (left) and editor (right) ---
-        ex_col, editor_col = st.columns([1, 2])
+        elements.append(Paragraph("<b>AI Data Analysis Report</b>", styles["Title"]))
+        elements.append(Spacer(1, 0.3 * inch))
 
-        with ex_col:
-            st.markdown("### 🔍 Examples")
-            st.markdown("**Basic (works in SQLite & DuckDB):**")
-            if st.button("Example: SELECT * (basic)"):
-                st.session_state.sql_query = "SELECT * FROM data LIMIT 200"
-            if st.button("Example: Filter rows (WHERE)"):
-                st.session_state.sql_query = "SELECT * FROM data WHERE age > 30 AND salary IS NOT NULL ORDER BY salary DESC LIMIT 200"
-            if st.button("Example: Projection + ORDER"):
-                st.session_state.sql_query = "SELECT name, age, salary FROM data WHERE salary > 50000 ORDER BY salary DESC LIMIT 100"
+        elements.append(Paragraph(f"Dataset Shape: {st.session_state.cleaned_data.shape}", styles["Normal"]))
+        elements.append(Spacer(1, 0.2 * inch))
 
-            st.markdown("**Aggregation & Grouping:**")
-            if st.button("Example: GROUP BY + AGG"):
-                st.session_state.sql_query = "SELECT department, COUNT(*) AS cnt, AVG(salary) AS avg_salary FROM data GROUP BY department ORDER BY avg_salary DESC"
-            if st.button("Example: HAVING (filter groups)"):
-                st.session_state.sql_query = "SELECT department, COUNT(*) AS cnt FROM data GROUP BY department HAVING cnt > 50 ORDER BY cnt DESC"
+        elements.append(Paragraph(f"Target Column: {st.session_state.target_column}", styles["Normal"]))
+        elements.append(Spacer(1, 0.2 * inch))
 
-            st.markdown("**Date / Window / Advanced (DuckDB recommended):**")
-            if st.button("Example: Time series resample (DuckDB)"):
-                st.session_state.sql_query = "SELECT DATE_TRUNC('month', date_column) AS month, AVG(value) AS avg_value FROM data GROUP BY month ORDER BY month"
-            if st.button("Example: Window function (DuckDB)"):
-                st.session_state.sql_query = "SELECT *, ROW_NUMBER() OVER (PARTITION BY department ORDER BY salary DESC) AS dept_rank FROM data"
+        elements.append(Paragraph(f"Model Type: {st.session_state.model_type}", styles["Normal"]))
+        elements.append(Spacer(1, 0.2 * inch))
 
-            st.markdown("**Joins & Subqueries (DuckDB recommended):**")
-            if st.button("Example: JOIN two tables (DuckDB)"):
-                st.session_state.sql_query = (
-                    "-- DuckDB example using registered tables\n"
-                    "-- Assume you have another dataframe registered as 'other'\n"
-                    "SELECT a.*, b.info FROM data AS a JOIN other AS b ON a.id = b.id LIMIT 200"
-                )
-            if st.button("Example: Subquery / Derived table"):
-                st.session_state.sql_query = (
-                    "SELECT t.department, t.avg_salary FROM (\n"
-                    "  SELECT department, AVG(salary) AS avg_salary FROM data GROUP BY department\n"
-                    ") AS t ORDER BY t.avg_salary DESC"
-                )
+        elements.append(Paragraph(f"Model Performance Score: {round(st.session_state.model_score,3)}", styles["Normal"]))
+        elements.append(Spacer(1, 0.3 * inch))
 
-            st.markdown("---")
-            st.markdown("**Notes:**")
-            st.markdown("- DuckDB supports advanced SQL (window functions, many date functions, fast JOINs).")
-            st.markdown("- SQLite is used as a fallback for basic SELECT, WHERE, GROUP BY, ORDER BY queries.")
-            st.markdown("- Table name is `data`. To query additional uploaded tables, register them with DuckDB or write to SQLite before querying.")
+        elements.append(Paragraph("This report is automatically generated by the AI Data Studio application.", styles["Normal"]))
 
-        with editor_col:
-            st.markdown("### ✍️ SQL Editor")
-            sql = st.text_area("Write your SQL query (table name: data)", value=st.session_state.sql_query, height=180, key="sql_text_area")
-            max_display = st.number_input("Max rows to display (0 = all)", min_value=0, max_value=100000, value=500)
+        doc.build(elements)
 
-            run_col, schema_col = st.columns(2)
-            if run_col.button("Run SQL"):
-                try:
-                    if use_duckdb:
-                        # duckdb queries DataFrame directly; register df as 'data'
-                        con = duckdb.connect(database=':memory:')
-                        con.register('data', df)
-                        # if user referenced other tables they need to be registered in session
-                        # execute
-                        q = sql.strip()
-                        result_df = con.execute(q).df()
-                        con.unregister('data')
-                        con.close()
-                    else:
-                        # fallback: sqlite in-memory
-                        import sqlite3
-                        conn = sqlite3.connect(":memory:")
-                        df.to_sql("data", conn, index=False, if_exists="replace")
-                        result_df = pd.read_sql_query(sql, conn)
-                        conn.close()
+        with open(file_path, "rb") as f:
+            st.download_button(
+                label="Download PDF Report",
+                data=f,
+                file_name="AI_Model_Report.pdf",
+                mime="application/pdf"
+            )
 
-                    if result_df is None or result_df.shape[0] == 0:
-                        st.warning("Query returned no results.")
-                    else:
-                        nrows, ncols = result_df.shape
-                        st.success(f"Query OK — {nrows:,} rows × {ncols} columns")
-                        if max_display > 0:
-                            st.dataframe(result_df.head(max_display))
-                        else:
-                            st.dataframe(result_df)
-                        csv = result_df.to_csv(index=False).encode('utf-8')
-                        st.download_button("⬇️ Download query results (CSV)", data=csv, file_name="query_results.csv", mime="text/csv")
-                except Exception as e:
-                    st.error(f"SQL execution error: {e}")
+        st.success("PDF Generated Successfully!")
 
-            if schema_col.button("Show original table schema"):
-                try:
-                    schema = [(c, str(df[c].dtype)) for c in df.columns]
-                    st.table(pd.DataFrame(schema, columns=["column", "dtype"]))
-                except Exception as e:
-                    st.error(f"Error showing schema: {e}")
-
-        st.markdown("---")
-        st.caption("Beginners: try simple SELECT/FILTER/ORDER queries. Professionals: use JOINs, aggregations and window functions (DuckDB supports many advanced SQL features).")
 
 # ---------------- Explain My Dataset (Attractive Local Summary) ---------------- #
 elif selected_tab == "🔎 Explain My Dataset":
