@@ -17,6 +17,7 @@ from modules.eda import EDAAnalyzer
 from modules.data_cleaner import DataCleaner
 
 
+
 # ---------------- PAGE CONFIG (call once) ---------------- #
 st.set_page_config(page_title="DataPilot AI Studio", page_icon="assets/M2 logo.png", layout="wide")
 
@@ -855,7 +856,7 @@ elif selected_tab == "🔎 Explain My Dataset":
 # ---------------- About ---------------- #
 elif selected_tab == "ℹ️ About":
     with st.container():
-        st.markdown("<h2 style='text-align:;'>ℹ️ About MatrixLab AI Studio</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:;'>ℹ️ DataPilot AI Studio</h2>", unsafe_allow_html=True)
 
         # Main App Logo
         colA, colB, colC = st.columns([1,2,1])
@@ -863,7 +864,7 @@ elif selected_tab == "ℹ️ About":
             st.image("assets/Matrix logo.png", width=180, caption="MatrixLab AI Studio")
 
         st.markdown("""
-Welcome to **MatrixLab AI Studio** — your all-in-one, intelligent, interactive CSV analytics platform designed for  
+Welcome to **DataPilot AI Studio** — your all-in-one, intelligent, interactive CSV analytics platform designed for  
 **students, data analysts, researchers, and working professionals.**  
 This tool converts raw datasets into **clean, structured, and insightful summaries within seconds**, with zero coding required.
 
