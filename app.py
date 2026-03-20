@@ -861,7 +861,7 @@ elif selected_tab == "ℹ️ About":
         # Main App Logo
         colA, colB, colC = st.columns([1,2,1])
         with colB:
-            st.image("assets/Matrix logo.png", width=180, caption="MatrixLab AI Studio")
+            st.image("assets/datapilot logo.png", width=180, caption="DataPilot AI Studio")
 
         st.markdown("""
 Welcome to **DataPilot AI Studio** — your all-in-one, intelligent, interactive CSV analytics platform designed for  
@@ -972,7 +972,7 @@ This application is designed to **simplify data analysis**,
 **accelerate learning**, and **empower professionals** to make data-driven decisions effortlessly.
 
 Feel free to explore, experiment, and innovate.  
-MatrixLab AI Studio is built for **your creativity**.
+DataPilot AI Studio is built for **your creativity**.
         """)
 
         # ---------------- Developed By Section ---------------- #
@@ -991,12 +991,10 @@ MatrixLab AI Studio is built for **your creativity**.
 <div style='text-align:; font-size:18px;'>
  
         
-👨‍💻 **Prasen Nimje**  
-🔗 <a href='https://github.com/Prasen8' target='_blank'>GitHub Profile</a>
+👨‍💻 **Tejsvi Barad**  
+🔗 <a href='https://github.com/Tejsvi-Barad' target='_blank'>GitHub Profile</a>
 
-👨‍💻 **Mahesh Khumkar**  
-🔗 <a href='https://github.com/MShriK17' target='_blank'>GitHub Profile</a>
-</div>
+
 
 <br>
 
@@ -1011,4 +1009,4 @@ st.markdown("---")
 # ---------------- Footer ---------------- #
 st.markdown("---")
 st.markdown("##### Your end-to-end AI & ML studio for modern data science", unsafe_allow_html=True)
-st.caption("🔵 MatrixLab AI Studio v2.0 | CREATIVE ENGE~NEARS")
+st.caption("🔵 DataPilot AI Studio | CREATIVE ENGE~NEARS")
